@@ -8,25 +8,37 @@ int read_command(char* command, char* arg[], char* fdest);
 int run_command(char* command, char* arg[], char* fdest);
 void load_bashrc();  // Prototypage de la fonction
 
+#include <unistd.h>  // For getcwd()
+#include <limits.h>  // For PATH_MAX
+
+char launch_dir[PATH_MAX];  // Global variable to store the launch directory
+
 int main() {
     char command[BUFFER];
     char fdest[BUFFER];
     char* arg[BUFFER];
     int nb_args, i;
 
-    load_bashrc();  // Charger le fichier ~/.mini_bashrc au démarrage
+    // Save the launch directory
+    if (getcwd(launch_dir, sizeof(launch_dir)) == NULL) {
+        mini_perror("getcwd");
+        mini_exit(EXIT_FAILURE);
+    }
+
+    load_bashrc();  // Load ~/.mini_bashrc
 
     while (1) {
-        mini_printf("\n┌──(Ahmad@Saad)'s mini_shell- [");
-        mini_pwd();
+        // Print the prompt with the current directory
+        mini_printf("\n┌──(Lambda@Xpert)'s mini_shell- [");
+        mini_pwd();  // Show the current directory
         mini_printf("]\n└─λ ");
-        fdest[0] = '\0'; // Initialiser la chaîne de destination du fichier
+        fdest[0] = '\0'; // Initialize the destination file string
 
-        // Lire une commande à exécuter
+        // Read a command to execute
         nb_args = read_command(command, arg, fdest);
-        arg[0] = command;  // Définir la commande comme le premier argument
+        arg[0] = command;  // Set the command as the first argument
 
-        // Quitter le shell si la commande est 'exit'
+        // Exit the shell if the command is 'exit'
         if (nb_args == -1) {
             mini_printf("Exit\n");
             mini_exit(EXIT_SUCCESS);
@@ -40,8 +52,11 @@ int main() {
             mini_printf("], fdest: ", fdest,"\n");
         }
 
-        // Exécuter la commande
+        // Execute the command
         run_command(command, arg, fdest);
+
+        // Update the prompt after executing the command
+        mini_printf("\n");
     }
 }
 
@@ -81,6 +96,13 @@ int read_command(char* command, char* arg[], char* fdest) {
 }
 
 int run_command(char* command, char* arg[], char* fdest) {
+    // Handle mini_cd in the parent process
+    if (mini_strcmp(command, "mini_cd") == 0) {
+        mini_cd(arg[1]);  // arg[1] is the directory path
+        return 0;  // Return success
+    }
+
+    // Fork and execute other commands
     pid_t status;
     int fd;
 
@@ -90,6 +112,7 @@ int run_command(char* command, char* arg[], char* fdest) {
         mini_perror("Process creation failed");
         exit(EXIT_FAILURE);
     case 0:
+        // Child process
         // Is there an output file?
         if (mini_strlen(fdest) > 0) {
             fd = open(fdest, O_WRONLY | O_CREAT | O_TRUNC, 0666);
@@ -101,14 +124,28 @@ int run_command(char* command, char* arg[], char* fdest) {
             close(fd); // Close fd after duplicating
         }
 
-        // Use execv to execute the command
-        if (execvp(command, arg) == -1) { // Use execvp to find the command in PATH
-            mini_perror("Error executing command");
-            mini_exit(EXIT_FAILURE);
+        // Construct the full path to the executable
+        char executable_path[PATH_MAX];
+        snprintf(executable_path, sizeof(executable_path), "%s/%s", launch_dir, command);
+
+        // Check if the executable exists in the launch directory
+        if (access(executable_path, X_OK) == 0) {
+            // Execute the command using the full path
+            if (execv(executable_path, arg) == -1) {
+                mini_perror("Error executing command");
+                mini_exit(EXIT_FAILURE);
+            }
+        } else {
+            // Use execvp to execute the command from PATH
+            if (execvp(command, arg) == -1) {
+                mini_perror("Error executing command");
+                mini_exit(EXIT_FAILURE);
+            }
         }
 
         exit(EXIT_SUCCESS);
     default:
+        // Parent process
         // Wait for the command to finish
         wait(&status);
         if (WIFEXITED(status)) {

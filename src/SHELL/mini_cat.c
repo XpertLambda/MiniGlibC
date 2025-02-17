@@ -7,4 +7,4 @@ int main(int argc, char *argv[]) {
     }
     mini_cat(argv[1]);
     return 0;
-}
+}   
