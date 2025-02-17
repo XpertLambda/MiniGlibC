@@ -1,4 +1,4 @@
-#include "mini_lib.h"
+#include "../mini_lib.h"
 
 void mini_touch(char* file_name) {
     MYFILE* file = mini_fopen(file_name, 'w');
@@ -262,12 +262,29 @@ void mini_quickdiff(char *file1, char *file2) {
     mini_fclose(f2);
 }
 
-void mini_cd(char *path) {
-    if (chdir(path) != 0) {
-        mini_perror("Failed to change directory");
+void mini_cd(char* path) {
+    if (path == NULL) {
+        // If no argument is provided, change to the home directory
+        char* home = getenv("HOME");
+        if (home == NULL) {
+            mini_printf("mini_cd: HOME environment variable not set\n");
+            return;
+        }
+        if (chdir(home) != 0) {
+            mini_perror("mini_cd");
+        }
+    } else if (mini_strcmp(path, "..") == 0) {
+        // Handle ".." to move to the parent directory
+        if (chdir("..") != 0) {
+            mini_perror("mini_cd");
+        }
+    } else {
+        // Change to the specified directory
+        if (chdir(path) != 0) {
+            mini_perror("mini_cd");
+        }
     }
 }
-
 void mini_env() {
     for (int i = 0; environ[i] != NULL; i++) {
         mini_printf(environ[i],"\n");
