@@ -1,0 +1,87 @@
+#include "mini_lib.h"  // Include your custom functions like mini_printf, mini_scanf, etc.
+
+#define TESTING 1
+
+int main(int argc, char const *argv[]){
+    #ifdef TESTING
+    //Testing every function i wrote.
+    #define COLS 20
+    #define ROWS 3
+    #define mFILE "test.txt"
+    //TEST 1 : CALLOC
+    mini_printf("\n-> mini_calloc :: Allocating array of words : ",mini_itoa(ROWS)," words of length ",mini_itoa(COLS)," each.");
+    char** words = (char **)mini_calloc(sizeof(char *), ROWS);
+    if(words == NULL) mini_perror(MEM_FAIL);
+
+    for(int i = 0 ; i < ROWS; i++){
+        words[i] = (char *)mini_calloc(sizeof(char), COLS);
+    }
+
+    //TEST 2 : SCANF
+    mini_printf("\n-> mini_scanf :: Enter a single word : ");
+    mini_scanf(words[0], sizeof(char)*COLS);
+
+    //TEST 3 : strncpy
+    mini_printf("\n-> mini_strncpy :: Copying this word to the rest of the array");
+    for(int i = 1 ; i < ROWS; i++) mini_printf("\n-> mini_strncpy copied ",mini_itoa(mini_strncpy(words[0], words[i], COLS))," characters from ",words[0]," to word number ",mini_itoa(i+1));
+
+    mini_printf("\n-> mini_printf :: The array is now : ");
+    for(int i = 0 ; i < ROWS; i++) mini_printf("\nWord ",mini_itoa(i+1)," : ",words[i]);
+
+    //TEST 4 : FREE + CALLOC
+    mini_printf("\n-> mini_free :: Freeing the last word");
+    mini_free(words[ROWS-1]);
+    mini_printf("\n-> mini_calloc :: Allocating a word with the same size of the freed one");
+    char* string = (char *)mini_calloc(sizeof(char), COLS);
+    if(string == NULL) mini_perror(MEM_FAIL);
+    mini_strncpy("DIFFERENT",string, COLS);
+    mini_printf("\n-> mini_calloc :: Reprinting the array, the new word should appear");
+    for(int i = 0 ; i < ROWS; i++) mini_printf("\nWord ",mini_itoa(i+1)," : ",words[i]);
+
+    //TEST 5 : strncmp
+    if(mini_strncmp(words[0],words[1], COLS)==0) mini_printf("\n-> mini_strncmp :: ",words[0]," and ",words[1]," are equal");
+    if(mini_strncmp(words[0],words[ROWS-1], COLS)!=0) mini_printf("\n-> mini_strncmp :: ",words[0]," and ",words[ROWS-1]," are not equal");
+    
+    //TEST 6 : FOPEN
+    mini_printf("\n-> mini_fopen :: opening file in writing mode ",mFILE);
+    MYFILE* file = mini_fopen(mFILE,'a');
+    mini_printf("\n-> add_to_open_file_list :: added ",mFILE," to list");
+
+    //TEST 7 : FWRITE
+    mini_printf("\n-> mini_fwrite :: writing the array on file ",mFILE);
+    for(int i=0 ; i < ROWS ; i++) { 
+        mini_fwrite(words[i],mini_strnlen(words[i], COLS),sizeof(char),file);
+    }
+    //TEST 8 : FPUTC
+    mini_printf("\n-> mini_fputc :: putting characters to the file ",mFILE,":\n"); 
+    mini_fputc(file, '\n');
+    mini_fputc(file, 'H');
+    mini_fputc(file, 'i');
+    mini_fputc(file, '\n');
+    mini_fclose(file);
+
+    //TEST 8 : FREAD
+    mini_fopen(mFILE,'r');
+    char* buffer = mini_calloc(sizeof(char), BUF_SIZE);
+    if(buffer == NULL) mini_perror(MEM_FAIL);
+    mini_printf("\n-> mini_fread :: reading the file",mFILE,":\n"); 
+    mini_fread(buffer, BUF_SIZE, sizeof(char), file);
+    mini_printf(buffer,"\n");
+    mini_fclose(file);
+
+    //TEST 10 : FGETC
+    mini_fopen(mFILE,'r');
+    mini_printf("\n-> mini_fgetc :: reading the file character by character\n"); 
+    char c;
+    char cStr[2];
+    cStr[1] = '\0';
+    while ((c = mini_fgetc(file)) != -1) {
+        cStr[0] = c;
+        mini_printf(cStr);
+    }
+    mini_fclose(file);
+    mini_printf("\n\n____________________\n\n");
+
+    #endif
+    return 0;
+}
