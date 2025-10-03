@@ -84,8 +84,45 @@ The library provides various functionalities that can be used in C programs for 
 
 ## Makefile
 
-The `Makefile` is located in the `miniGlibc/src/SHELL` directory. Use it to build the project:
+The `Makefile` is located in the `src/SHELL` directory. Use it to build the project:
+
 ```bash
-cd miniGlibc/src/SHELL
-make
+cd src/SHELL
+make          # Build all utilities
+make test     # Run basic functionality tests
+make clean    # Remove compiled files
 ```
+
+## Recent Improvements
+
+The project has been thoroughly reviewed and the following issues have been fixed:
+
+### Code Quality Improvements
+- Fixed memory management: All `malloc`/`free` calls replaced with custom `mini_calloc`/`mini_free`
+- Corrected function parameter order in `mini_strcpy` and `mini_strncpy`
+- Fixed buffer management in file I/O operations
+- Added proper null-termination in string operations
+- Fixed compilation warnings and errors with modern compiler flags
+
+### Professional Structure
+- Added comprehensive error handling throughout the codebase
+- Improved Makefile with proper compilation flags (`-Wall -Wextra -std=c99 -pedantic -g`)
+- Added automated test suite in Makefile
+- Fixed header file declarations to match implementations
+- Added proper feature test macros for POSIX compliance
+
+### Functionality Fixes
+- Fixed file descriptor leaks by properly tracking open files
+- Corrected `mini_pwd` implementation to use standard `getcwd`
+- Fixed `mini_export` function with proper environment variable handling
+- Added proper newline handling in output functions
+- Fixed memory leaks in buffer allocations
+
+### Testing
+- All utilities compile without warnings
+- Basic functionality tests pass
+- Interactive shell works correctly
+- File operations (read/write/copy) function properly
+- Directory operations work as expected
+
+The project now compiles cleanly with modern C standards and runs reliably.

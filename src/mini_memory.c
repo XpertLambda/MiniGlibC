@@ -1,6 +1,8 @@
 #include "mini_lib.h"
 
-malloc_element *malloc_list = NULL;  // Initialize the global malloc list
+extern void* sbrk(intptr_t increment);
+
+malloc_element *malloc_list = NULL;
 
 void* mini_calloc(int size_element, int number_element){
 	size_t total_size = size_element * number_element;  // Calculate total memory size

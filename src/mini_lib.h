@@ -1,9 +1,12 @@
 #ifndef __MINI_LIB__
 #define __MINI_LIB__
 
+#define _GNU_SOURCE
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h> // For size_t definition
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -14,6 +17,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <limits.h>
 
 
 #define MEM_FAIL "Memory allocation failed" // Error message to display when memory allocation fails
@@ -137,7 +141,7 @@ int mini_strlen(char* s);
  * @dest_size: maximum allocated memory for d
  * @return: 0 on success, -1 on failure.
  */
-int mini_strncpy(char* s, char* d, size_t dest_size);
+int mini_strncpy(char* d, char* s, size_t dest_size);
 
 /**
  * Copies the string from source to destination.
@@ -146,7 +150,7 @@ int mini_strncpy(char* s, char* d, size_t dest_size);
  * @d: Destination string.
  * @return: 0 on success, -1 on failure.
  */
-int mini_strcpy(char* s, char* d);
+int mini_strcpy(char* d, char* s);
 
 /**
  * Compares two strings lexicographically.
@@ -201,7 +205,7 @@ int mini_atoi(char *s);
  * Searches for the first occurrence of the substring 'word2' in the string 'word1'.
  * @param word1 The string to be searched.
  * @param word2 The substring to find.
- * @return A pointer to the beginning of the substring in 'word1', or NULL if the substring is not found.
+ * @return 1 if substring is found, 0 if not found.
  */
 int mini_strstr(char* word1, char* word2);
 

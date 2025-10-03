@@ -73,7 +73,7 @@ int mini_strnlen(char* s, size_t max_len){
     return i; // Return the length
 }
 
-int mini_strcpy(char* s, char* d) {
+int mini_strcpy(char* d, char* s) {
     int i = 0;
     while (s[i] != '\0') {
         d[i] = s[i];
@@ -83,14 +83,14 @@ int mini_strcpy(char* s, char* d) {
     return i;
 }
 
-int mini_strncpy(char* s, char* d, size_t dest_size) {
-    int i = 0;
-    while (i < dest_size && s[i] != '\0') {
+int mini_strncpy(char* d, char* s, size_t dest_size) {
+    size_t i = 0;
+    while (i < dest_size - 1 && s[i] != '\0') {
         d[i] = s[i];
         i++;
     }
-    d[i] = '\0'; // Null-terminate the destination string
-    return i;
+    d[i] = '\0';
+    return (int)i;
 }
 
 int mini_strcmp(char* s1, char* s2) {

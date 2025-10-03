@@ -42,8 +42,9 @@ void mini_cat(char* file_name) {
     }
 
     int bytes_read;
-    while ((bytes_read = mini_fread(buffer, 1, BUF_SIZE, file)) > 0) {
-        mini_printf(buffer);
+    while ((bytes_read = mini_fread(buffer, 1, BUF_SIZE - 1, file)) > 0) {
+        buffer[bytes_read] = '\0';
+        write(STDOUT_FILENO, buffer, bytes_read);
     }
 
     mini_fclose(file);
@@ -150,7 +151,7 @@ void mini_wc(char *file_name) {
 }
 
 void mini_echo(char* str){
-    mini_printf(str);
+    mini_printf(str, "\n");
 }
 
 void mini_grep(char* keyword, char* filename){
@@ -179,7 +180,7 @@ void mini_grep(char* keyword, char* filename){
 
             // Check if the keyword exists in the line
             if (mini_strstr(buffer, keyword)) {
-                mini_printf(buffer);
+                mini_printf(buffer, "\n");
             }
 
             // Reset the buffer index for the next line
@@ -332,19 +333,15 @@ void mini_export(char *var) {
     }
 
     // Free allocated memory
-    free(key);
-    free(value);
+    mini_free(key);
+    mini_free(value);
 }
 
 void mini_pwd() {
-    char cwd[PATH_MAX];
-    ssize_t len;
-
-    len = readlink("/proc/self/cwd", cwd, sizeof(cwd) - 1);
-    if (len == -1) {
-        mini_perror("Failed to read link");
+    char cwd[MAX_PATH];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        mini_printf(cwd, "\n");
     } else {
-        cwd[len] = '\0';  // Null-terminate the string
-        mini_printf(cwd);
+        mini_perror("Failed to get current directory");
     }
 }
